@@ -3,6 +3,4 @@ dist
 .DS_Store
 *.local
 .vite
-vercel.json
-netlify.toml
 tsconfig.tsbuildinfo
