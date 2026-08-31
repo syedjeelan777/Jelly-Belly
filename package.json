@@ -1,0 +1,31 @@
+{
+  "name": "stickyverse",
+  "private": true,
+  "version": "1.0.0",
+  "description": "STICKYVERSE \u2014 a sticky jelly puzzle game for the browser.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -b --noEmit",
+    "verify": "tsx scripts/verify-levels.ts",
+    "smoke": "tsx scripts/smoke-controller.ts",
+    "smoke:ui": "tsx scripts/smoke-ui.tsx"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "zustand": "^4.5.5"
+  },
+  "devDependencies": {
+    "@types/node": "^26.4.0",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "happy-dom": "^20.12.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.11"
+  }
+}
