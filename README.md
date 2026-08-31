@@ -90,6 +90,12 @@ The production build is a static site and works anywhere:
 
 No paid services required.
 
+## 🛠 Developer tools
+
+- **`npm run verify`** — BFS-solves all 60 levels and validates every map (exits nonzero on failure).
+- **`npm run smoke` / `npm run smoke:ui`** — headless controller + React UI smoke suites (happy-dom).
+- **Dev overlay** — press `F3` in-game (dev builds or `?debug` in the URL) to show a grid/collision/id debug canvas, FPS meter, and shortcuts: skip level, reload, reset save.
+
 ## 🎮 Controls
 
 | Action | Keyboard | Gamepad | Touch |
