@@ -51,6 +51,10 @@ export function GameScreen() {
   const wrapRef = useRef<HTMLDivElement>(null);
   const controllerRef = useRef<GameController | null>(null);
   const [moves, setMoves] = useState(0);
+  const debugQuery = new URLSearchParams(window.location.search).has('debug');
+  const [debug, setDebug] = useState(false);
+  const [fps, setFps] = useState(0);
+  void debugQuery;
   const [objective, setObjective] = useState('reach exit');
   const [ready, setReady] = useState(false);
   const coarse = useCoarsePointer();
@@ -81,6 +85,7 @@ export function GameScreen() {
     });
     ctrl.reducedMotion = settings.reducedMotion;
     ctrl.screenShake = settings.screenShake;
+    ctrl.debug = debug;
     controllerRef.current = ctrl;
     setMoves(0);
     setObjective(objectiveInfo(ctrl.state).label);
@@ -202,6 +207,30 @@ export function GameScreen() {
     };
   }, [restartLevel, togglePause]);
 
+  // F3 toggles the dev overlay (only active in DEV or with ?debug)
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'F3') {
+        e.preventDefault();
+        setDebug((d: boolean) => {
+          const next = !d;
+          if (controllerRef.current) controllerRef.current.debug = next;
+          return next;
+        });
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
+  // sample FPS from the controller
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      setFps(controllerRef.current?.fps ?? 0);
+    }, 500);
+    return () => window.clearInterval(id);
+  }, []);
+
   /* ------------------------------- handlers -------------------------------- */
 
   const onDir = useCallback((d: 'up' | 'down' | 'left' | 'right') => {
@@ -241,6 +270,18 @@ export function GameScreen() {
         <IconButton title="Pause (Esc)" onClick={togglePause}>Ⅱ</IconButton>
         <FullscreenButton />
       </header>
+
+      {debug && (
+        <div className="debug-panel" role="status" aria-label="Debug controls">
+          <span className="dbg-title">DEBUG</span>
+          <span>FPS <b>{fps}</b></span>
+          <span>Moves <b>{moves}</b></span>
+          <button onClick={() => controllerRef.current?.debugSkip()}>SKIP</button>
+          <button onClick={() => useGameStore.getState().resetProgress()}>RESET SAVE</button>
+          <button onClick={() => controllerRef.current?.restart()}>RELOAD</button>
+          <button onClick={() => { setDebug(false); if (controllerRef.current) controllerRef.current.debug = false; }}>HIDE</button>
+        </div>
+      )}
 
       <div className="game-canvas-wrap" ref={wrapRef} onClick={(e) => {
         // tap to resume audio (autoplay policy)

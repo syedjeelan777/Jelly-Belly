@@ -28,6 +28,10 @@ export class GameController {
   paused = false;
   reducedMotion = false;
   screenShake = true;
+  debug = false;
+  fps = 0;
+  private fpsAcc = 0;
+  private fpsFrames = 0;
 
   private level: LevelData;
   private renderer: Renderer;
@@ -111,6 +115,13 @@ export class GameController {
     if (!p) this.lastRepeatAt = performance.now();
   }
 
+  /** Dev-only: force-complete the current level. */
+  debugSkip(): void {
+    if (this.state.over === 'complete') return;
+    this.state.over = 'complete';
+    this.onComplete(performance.now());
+  }
+
   /* -------------------------------- loop ---------------------------------- */
 
   initLoop(): () => void {
@@ -120,6 +131,13 @@ export class GameController {
       if (this.disposed) return;
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
+      this.fpsAcc += dt;
+      this.fpsFrames++;
+      if (this.fpsAcc >= 0.5) {
+        this.fps = Math.round(this.fpsFrames / this.fpsAcc);
+        this.fpsAcc = 0;
+        this.fpsFrames = 0;
+      }
       this.update(dt, now);
       this.render(now);
       raf = requestAnimationFrame(tick);
@@ -327,6 +345,7 @@ export class GameController {
       fx: this.reducedMotion ? 0 : 1,
       stickyLinks: links,
       goalPulse: Math.sin(now / 300) * 0.5 + 0.5,
+      debug: this.debug,
     };
     this.renderer.render(view, 0.016);
   }

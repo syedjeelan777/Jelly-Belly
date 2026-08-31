@@ -38,6 +38,7 @@ export interface FrameView {
   fx: number;
   stickyLinks: Array<{ player: Vec2; jelly: Vec2; type: 'sticky' | 'elastic' | 'magnetic' }>;
   goalPulse: number;
+  debug: boolean;
 }
 
 const EASE = (t: number) => t * t * (3 - 2 * t);
@@ -220,6 +221,7 @@ export class Renderer {
     this.drawPlayer(view, dt);
     this.drawParticles(view.particles);
 
+    if (view.debug) this.drawDebug(view);
     ctx.restore();
     // death/complete flash vignette
     if (view.state.over === 'dead') {
@@ -773,6 +775,57 @@ export class Renderer {
       }
       ctx.globalAlpha = 1;
     }
+  }
+
+  /** Dev overlay: grid, collision boxes, object ids. */
+  private drawDebug(view: FrameView): void {
+    const ctx = this.c;
+    const s = view.state;
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255,80,255,0.35)';
+    ctx.lineWidth = 1;
+    for (let x = 0; x <= s.w; x++) {
+      ctx.beginPath();
+      ctx.moveTo(x * this.cell, 0);
+      ctx.lineTo(x * this.cell, s.h * this.cell);
+      ctx.stroke();
+    }
+    for (let y = 0; y <= s.h; y++) {
+      ctx.beginPath();
+      ctx.moveTo(0, y * this.cell);
+      ctx.lineTo(s.w * this.cell, y * this.cell);
+      ctx.stroke();
+    }
+    // solid cells
+    ctx.fillStyle = 'rgba(255,80,255,0.12)';
+    for (let y = 0; y < s.h; y++) {
+      for (let x = 0; x < s.w; x++) {
+        const i = y * s.w + x;
+        if (s.walls[i] || s.fire[i] || s.spikes[i] || s.water[i]) {
+          ctx.fillRect(x * this.cell, y * this.cell, this.cell, this.cell);
+        }
+      }
+    }
+    // ids
+    ctx.fillStyle = '#fff';
+    ctx.font = `${Math.max(8, this.cell * 0.3)}px monospace`;
+    ctx.textAlign = 'center';
+    const p = this.px(s.player.x, s.player.y);
+    ctx.fillText('P', p.x, p.y - this.cell * 0.4);
+    for (const j of s.jellies) {
+      const q = this.px(j.x, j.y);
+      ctx.fillText(`#${j.id}`, q.x, q.y - this.cell * 0.4);
+    }
+    for (const d of s.doors) {
+      const q = this.px(d.x, d.y);
+      ctx.fillText(d.open ? 'D✓' : 'D✗', q.x, q.y - this.cell * 0.4);
+    }
+    for (const m of s.magnets) {
+      const q = this.px(m.x, m.y);
+      ctx.fillText('M', q.x, q.y - this.cell * 0.4);
+    }
+    ctx.restore();
+    void view;
   }
 
   private sparkle(x: number, y: number, color: string, n: number): void {
