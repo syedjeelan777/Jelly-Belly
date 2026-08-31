@@ -81,7 +81,12 @@ The production build is a static site and works anywhere:
 
 - **Vercel** — import the repo; preset “Vite”. `vercel.json` is included for SPA rewrites.
 - **Netlify** — build command `npm run build`, publish dir `dist`. `netlify.toml` is included.
-- **GitHub Pages** — the included workflow (`.github/workflows/deploy.yml`) builds with `VITE_BASE=/<repo>/` and deploys automatically on push to main.
+- **GitHub Pages** — build with the repo-name base, then publish `dist/`:
+
+  ```bash
+  VITE_BASE=/jelly-belly/ npm run build
+  # then: Settings → Pages → deploy from a branch, or use actions/upload-pages-artifact
+  ```
 
 No paid services required.
 
